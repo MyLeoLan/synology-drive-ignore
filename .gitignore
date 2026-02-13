@@ -1,0 +1,13 @@
+# Binaries
+drive-conf-watch
+*.exe
+*.dll
+
+# Mac
+.DS_Store
+
+# Backups
+*.backup
+
+# Logs
+*.log
