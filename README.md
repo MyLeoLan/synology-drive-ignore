@@ -27,47 +27,40 @@ macOS 版本的 Synology Drive 客户端目前无法方便地设置“全局忽�
 
 ### 方法 1：一键安装（推荐）
 
-1.  克隆本仓库或直接下载 Release 中的二进制文件。
-2.  运行安装脚本：
+只需在终端运行以下命令，即可自动下载最新版本并安装为后台服务：
 
 ```bash
-chmod +x install.sh
-./install.sh
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/MyLeoLan/synology-drive-ignore/main/install.sh)"
 ```
 
-该脚本会自动执行以下操作：
--   检查二进制文件是否存在（如果不存在会提示你先构建）。
--   将应用注册为 **macOS Launch Agent**（开机自启服务）。
--   立即启动服务并在后台静默运行。
+该脚本会自动检测你的芯片架构（Intel/Apple Silicon），下载对应二进制文件，并设置为开机自启。
 
-### 方法 2：手动运行
+### 卸载服务
 
-你也可以直接在终端运行二进制文件来测试效果：
+如果你想卸载服务并删除程序，只需运行：
 
 ```bash
-./drive-conf-watch
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/MyLeoLan/synology-drive-ignore/main/install.sh)" -- --uninstall
 ```
+
+### 方法 2：手动从 Release 安装
+
+1.  前往 [Releases 页面](https://github.com/MyLeoLan/synology-drive-ignore/releases) 下载适合你架构的二进制文件。
+2.  将其移动到 `/usr/local/bin` 或其他 PATH 路径下。
+3.  手动运行或配置 Launch Agent。
 
 ## 自定义忽略规则
 
-如果你想添加自定义的文件夹到忽略列表：
+如果你想添加自定义的文件夹到忽略列表，需要自行编译：
 
-1.  打开 `main.go` 文件。
-2.  修改文件顶部的 `defaultIgnoreDirs` 变量：
-
-```go
-var defaultIgnoreDirs = []string{
-    // ... 现有规则 ...
-    "my-custom-folder",   // 添加你的文件夹
-    "another-ignored-dir",
-}
-```
-
-3.  重新编译程序（参考下方的“构建指南”）。
-4.  重启服务以应用更改：
+1.  克隆本仓库。
+2.  修改 `main.go` 中的 `defaultIgnoreDirs` 变量。
+3.  运行 `go build -o drive-conf-watch`。
+4.  停止现有服务并替换二进制文件。
 
 ```bash
 launchctl unload ~/Library/LaunchAgents/com.user.synologywatch.plist
+# 替换二进制文件...
 launchctl load ~/Library/LaunchAgents/com.user.synologywatch.plist
 ```
 
@@ -83,7 +76,7 @@ go build -o drive-conf-watch
 
 ### 交叉编译 (用于发布)
 
-**构建 Apple Silicon (M1/M2/M3) 版本:**
+**构建 Apple Silicon (M系列芯片) 版本:**
 ```bash
 GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o drive-conf-watch-darwin-arm64
 ```
